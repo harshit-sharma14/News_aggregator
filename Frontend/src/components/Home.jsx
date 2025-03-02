@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import NewsCard from './NewsCard'; // Your NewsCard component
 import { FaNewspaper, FaSearch } from 'react-icons/fa';
+import Footer from './Footer';
 
 const Home = () => {
   const [latestNews, setLatestNews] = useState([]);
@@ -126,11 +127,8 @@ const Home = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white shadow-inner py-6">
-        <div className="container mx-auto px-6 text-center text-gray-600">
-          &copy; {new Date().getFullYear()} News Aggregator. All rights reserved.
-        </div>
-      </footer>
+     <Footer/>
+     
     </div>
   );
 };
