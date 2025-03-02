@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import NewsCard from './NewsCard'; // Import the NewsCard component
+import NewsCard from './NewsCard'; // Your NewsCard component
+import { FaNewspaper, FaSearch } from 'react-icons/fa';
 
 const Home = () => {
   const [latestNews, setLatestNews] = useState([]);
@@ -9,8 +10,6 @@ const Home = () => {
     sports: [],
     entertainment: [],
   });
-
-  // Replace with your NewsAPI key
   const API_KEY = 'dc4c52e13aed40ee88b353d77e2d68b3';
 
   useEffect(() => {
@@ -34,69 +33,104 @@ const Home = () => {
     };
 
     // Fetch news for each category
-    fetchCategoryNews('technology');
-    fetchCategoryNews('business');
-    fetchCategoryNews('sports');
-    fetchCategoryNews('entertainment');
+    ['technology', 'business', 'sports', 'entertainment'].forEach((category) =>
+      fetchCategoryNews(category)
+    );
   }, [API_KEY]);
 
   return (
-    <div className="bg-gray-100 min-h-screen p-8">
-      {/* Header */}
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800">News Aggregator</h1>
-        <p className="text-gray-600">Your one-stop destination for the latest news</p>
+    <div className="bg-gray-50 min-h-screen">
+      {/* Navbar */}
+      <nav className="bg-white shadow-lg">
+        <div className="container mx-auto px-6 py-3 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <FaNewspaper className="text-blue-500 text-2xl" />
+            <span className="font-bold text-xl text-gray-800">News Aggregator</span>
+          </div>
+          <div className="flex items-center">
+            <input
+              type="text"
+              placeholder="Search news..."
+              className="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button className="ml-2 text-blue-500 hover:text-blue-700">
+              <FaSearch />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <header className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-20">
+        <div className="container mx-auto px-6 text-center">
+          <h1 className="text-5xl font-bold mb-4">Stay Updated with the Latest News</h1>
+          <p className="text-xl">Get real-time updates from trusted sources around the globe</p>
+        </div>
       </header>
 
-      {/* Latest News Section */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Latest News</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestNews.map((news, index) => (
-            <NewsCard key={index} news={news} /> // Use the NewsCard component
-          ))}
-        </div>
-      </section>
+      <main className="container mx-auto px-6 py-12">
+        {/* Latest News Section */}
+        <section className="mb-12">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-8">Latest News</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {latestNews.map((news, index) => (
+              <NewsCard key={index} news={news} />
+            ))}
+          </div>
+        </section>
 
-      {/* Category-wise News Columns */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Explore by Category</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Object.entries(categories).map(([category, articles]) => (
-            <div key={category} className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 capitalize">{category}</h3>
-              <div className="space-y-4">
-                {articles.slice(0, 3).map((news, index) => (
-                  <div key={index} className="border-b pb-4">
-                    <h4 className="text-lg font-medium text-gray-800 hover:text-blue-600 transition-colors duration-300">
-                      <a href={news.url} target="_blank" rel="noopener noreferrer">
-                        {news.title}
-                      </a>
-                    </h4>
-                    <p className="text-sm text-gray-600 line-clamp-2">{news.description}</p>
-                  </div>
-                ))}
-              </div>
-              <a
-                href={`#${category}`} // Add a link to view more news in this category
-                className="mt-4 inline-block text-blue-500 hover:underline"
+        {/* Category-wise News */}
+        <section className="mb-12">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-8">Explore by Category</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {Object.entries(categories).map(([category, articles]) => (
+              <div
+                key={category}
+                className="bg-white rounded-lg shadow-lg p-6 transform hover:-translate-y-1 transition duration-300"
               >
-                View more {category} news →
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6 capitalize">
+                  {category}
+                </h3>
+                <div className="space-y-4">
+                  {articles.slice(0, 3).map((news, index) => (
+                    <div key={index} className="border-b pb-4">
+                      <h4 className="text-xl font-medium text-gray-800 hover:text-blue-600 transition-colors duration-300">
+                        <a href={news.url} target="_blank" rel="noopener noreferrer">
+                          {news.title}
+                        </a>
+                      </h4>
+                      <p className="text-gray-600 text-sm line-clamp-2">{news.description}</p>
+                    </div>
+                  ))}
+                </div>
+                <a
+                  href={`#${category}`}
+                  className="mt-4 inline-block text-blue-500 font-medium hover:underline"
+                >
+                  View more {category} news →
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* Additional News Section */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">More News</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestNews.slice(3).map((news, index) => (
-            <NewsCard key={index} news={news} /> // Use the NewsCard component
-          ))}
+        {/* More News Section */}
+        <section className="mb-12">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-8">More News</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {latestNews.slice(3).map((news, index) => (
+              <NewsCard key={index} news={news} />
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white shadow-inner py-6">
+        <div className="container mx-auto px-6 text-center text-gray-600">
+          &copy; {new Date().getFullYear()} News Aggregator. All rights reserved.
         </div>
-      </section>
+      </footer>
     </div>
   );
 };
