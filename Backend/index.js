@@ -1,37 +1,48 @@
+// server.js (or index.js)
 require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const { JSDOM } = require("jsdom");
+const { Readability } = require("@mozilla/readability");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-    credentials:true,
-    origin:'http://localhost:5173'
-})) // Allow frontend to make requests
+app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 app.use(express.json());
 
-// Fetch Full Article Content
 app.get("/api/full-article", async (req, res) => {
   const { url } = req.query;
-
-  if (!url) {
-    return res.status(400).json({ error: "Article URL is required" });
-  }
+  if (!url) return res.status(400).json({ error: "Article URL is required" });
 
   try {
-    // Use a web scraping API (example: Diffbot API)
-    const API_KEY = process.env.DIFFBOT_API_KEY; // Store API key in .env
-    const response = await axios.get(
-      `https://api.diffbot.com/v3/article?token=${API_KEY}&url=${encodeURIComponent(url)}`
-    );
+    // 1. Fetch raw HTML
+    const response = await axios.get(url, { timeout: 10_000 });
+    const html = response.data;
 
-    const article = response.data;
-    res.json({ content: article.text || "Full article not available." });
-  } catch (error) {
-    console.error("Error fetching full article:", error);
-    res.status(500).json({ error: "Failed to fetch article" });
+    // 2. Parse it into a DOM
+    const dom = new JSDOM(html, { url });           // base URL important for resolving relative links
+
+    // 3. Run Readability
+    const reader = new Readability(dom.window.document);
+    const article = reader.parse();
+
+    if (!article || !article.textContent) {
+      return res.json({ content: "Could not extract article text." });
+    }
+
+    // 4. Return structured output
+    res.json({
+      title:       article.title,
+      byline:      article.byline,
+      excerpt:     article.excerpt,
+      contentHTML: article.content,        // HTML string
+      textContent: article.textContent,    // plain text
+    });
+  } catch (err) {
+    console.error("Scrape/parsing error:", err.message);
+    res.status(500).json({ error: "Failed to fetch or parse article." });
   }
 });
 
