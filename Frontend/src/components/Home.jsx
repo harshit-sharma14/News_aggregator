@@ -1,136 +1,171 @@
-import React, { useEffect, useState } from 'react';
-import NewsCard from './NewsCard'; // Your NewsCard component
-import { FaNewspaper, FaSearch } from 'react-icons/fa';
+// src/components/Home.jsx
+import React, { useEffect, useState, useMemo } from 'react';
+import NewsCard from './NewsCard';
 import Footer from './Footer';
+import axios from 'axios';
 
-const Home = () => {
+const CATEGORIES = ['technology', 'business', 'sports', 'entertainment'];
+const BASE_URL = 'http://localhost:5000'; // 👈 backend server base
+
+export default function Home({ searchQuery = '', language = 'en' }) {
   const [latestNews, setLatestNews] = useState([]);
-  const [categories, setCategories] = useState({
-    technology: [],
-    business: [],
-    sports: [],
-    entertainment: [],
-  });
+  const [categories, setCategories] = useState({});
+  const [searchResults, setSearchResults] = useState([]);
+  const [translatedList, setTranslatedList] = useState([]);
+  const [activeCategory, setActiveCategory] = useState('');
+  const [isTranslating, setIsTranslating] = useState(false);
+
   const API_KEY = 'dc4c52e13aed40ee88b353d77e2d68b3';
 
+  // Fetch top headlines and categories
   useEffect(() => {
-    // Fetch latest news
-    fetch(`https://newsapi.org/v2/top-headlines?country=us&apiKey=${API_KEY}`)
-      .then((response) => response.json())
-      .then((data) => setLatestNews(data.articles))
-      .catch((error) => console.error('Error fetching latest news:', error));
-
-    // Function to fetch category-wise news
-    const fetchCategoryNews = async (category) => {
+    async function fetchData() {
       try {
-        const response = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${API_KEY}`
-        );
-        const data = await response.json();
-        setCategories((prev) => ({ ...prev, [category]: data.articles }));
-      } catch (error) {
-        console.error(`Error fetching ${category} news:`, error);
-      }
-    };
+        const res = await fetch(`https://newsapi.org/v2/top-headlines?country=us&apiKey=${API_KEY}`);
+        const { articles } = await res.json();
+        setLatestNews(articles);
 
-    // Fetch news for each category
-    ['technology', 'business', 'sports', 'entertainment'].forEach((category) =>
-      fetchCategoryNews(category)
+        const catData = {};
+        await Promise.all(
+          CATEGORIES.map(async (cat) => {
+            const r = await fetch(`https://newsapi.org/v2/top-headlines?country=us&category=${cat}&apiKey=${API_KEY}`);
+            const j = await r.json();
+            catData[cat] = j.articles || [];
+          })
+        );
+        setCategories(catData);
+      } catch (err) {
+        console.error('Error fetching news:', err);
+      }
+    }
+    fetchData();
+  }, []);
+
+  // Search news when query changes
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults([]);
+      return;
+    }
+    const all = [...latestNews, ...Object.values(categories).flat()];
+    const filtered = all.filter(item =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [API_KEY]);
+    setSearchResults(filtered);
+    setActiveCategory('');
+  }, [searchQuery, latestNews, categories]);
+
+  // Decide what list to use (latest, category, search)
+  const baseList = useMemo(() => {
+    if (searchQuery) return searchResults;
+    if (activeCategory) return categories[activeCategory] || [];
+    return latestNews;
+  }, [searchQuery, searchResults, activeCategory, categories, latestNews]);
+
+  // Translate if needed
+  useEffect(() => {
+    if (language === 'en' || baseList.length === 0) {
+      setTranslatedList([]);
+      return;
+    }
+
+    let canceled = false;
+    setIsTranslating(true);
+
+    (async () => {
+      const out = [];
+      for (const item of baseList) {
+        const text = item.description || item.title;
+        try {
+          const resp = await axios.post(`${BASE_URL}/api/translate`, {
+            text,
+            targetLanguage: language
+          });
+          out.push({ ...item, description: resp.data.translation });
+        } catch (e) {
+          console.error('Translation failed:', e);
+          out.push(item);
+        }
+        if (canceled) break;
+      }
+      if (!canceled) setTranslatedList(out);
+      setIsTranslating(false);
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, [baseList, language]);
+
+  const displayList = translatedList.length ? translatedList : baseList;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Navbar */}
-      <nav className="bg-white shadow-lg">
-        <div className="container mx-auto px-6 py-3 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <FaNewspaper className="text-blue-500 text-2xl" />
-            <span className="font-bold text-xl text-gray-800">News Aggregator</span>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="text"
-              placeholder="Search news..."
-              className="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button className="ml-2 text-blue-500 hover:text-blue-700">
-              <FaSearch />
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <header className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-20">
+    <div className="bg-gray-100 min-h-screen pt-6">
+      {/* Hero */}
+      <header className="bg-gradient-to-r from-black to-gray-600 text-white py-16">
         <div className="container mx-auto px-6 text-center">
-          <h1 className="text-5xl font-bold mb-4">Stay Updated with the Latest News</h1>
-          <p className="text-xl">Get real-time updates from trusted sources around the globe</p>
+          <h1 className="text-5xl font-extrabold mb-4">Stay Ahead of the Curve</h1>
+          <p className="text-xl max-w-2xl mx-auto">
+            Real-time headlines, curated by you. Explore, search, and dive into stories that matter.
+          </p>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-12">
-        {/* Latest News Section */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-8">Latest News</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {latestNews.map((news, index) => (
-              <NewsCard key={index} news={news} />
-            ))}
-          </div>
-        </section>
+      {/* Main */}
+      <main className="container mx-auto px-6 py-10">
+        {/* Category Tabs */}
+        <div className="flex space-x-4 overflow-x-auto pb-4 mb-8">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
+                activeCategory === cat
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
+              }`}
+            >
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </button>
+          ))}
+          <button
+            onClick={() => setActiveCategory('')}
+            className="px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-blue-100 transition whitespace-nowrap"
+          >
+            All
+          </button>
+        </div>
 
-        {/* Category-wise News */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-8">Explore by Category</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {Object.entries(categories).map(([category, articles]) => (
-              <div
-                key={category}
-                className="bg-white rounded-lg shadow-lg p-6 transform hover:-translate-y-1 transition duration-300"
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6 capitalize">
-                  {category}
-                </h3>
-                <div className="space-y-4">
-                  {articles.slice(0, 3).map((news, index) => (
-                    <div key={index} className="border-b pb-4">
-                      <h4 className="text-xl font-medium text-gray-800 hover:text-blue-600 transition-colors duration-300">
-                        <a href={news.url} target="_blank" rel="noopener noreferrer">
-                          {news.title}
-                        </a>
-                      </h4>
-                      <p className="text-gray-600 text-sm line-clamp-2">{news.description}</p>
-                    </div>
-                  ))}
-                </div>
-                <a
-                  href={`#${category}`}
-                  className="mt-4 inline-block text-blue-500 font-medium hover:underline"
-                >
-                  View more {category} news →
-                </a>
+        {/* Loading Spinner */}
+        {isTranslating ? (
+          <div className="text-center py-8 text-lg text-gray-600">
+            Translating articles… please wait.
+          </div>
+        ) : (
+          <section>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+              {searchQuery
+                ? `Search Results for "${searchQuery}"`
+                : activeCategory
+                ? `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} News`
+                : 'Latest News'}
+            </h2>
+
+            {displayList.length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {displayList.map((news, idx) => (
+                  <NewsCard key={idx} news={news} />
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* More News Section */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-8">More News</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {latestNews.slice(3).map((news, index) => (
-              <NewsCard key={index} news={news} />
-            ))}
-          </div>
-        </section>
+            ) : (
+              <p className="text-gray-500">No articles found.</p>
+            )}
+          </section>
+        )}
       </main>
 
-      {/* Footer */}
-     <Footer/>
-     
+      <Footer />
     </div>
   );
-};
-
-export default Home;
+}

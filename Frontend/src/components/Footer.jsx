@@ -1,116 +1,77 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebook, faTwitter, faInstagram, faLinkedin } from '@fortawesome/free-brands-svg-icons';
+import {
+  faFacebookF,
+  faTwitter,
+  faInstagram,
+  faLinkedinIn,
+} from '@fortawesome/free-brands-svg-icons';
 
-const Footer = () => {
+export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="container mx-auto px-6">
-        {/* Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* About Section */}
-          <div className="mb-8 md:mb-0">
-            <h3 className="text-xl font-semibold mb-4">About Us</h3>
-            <p className="text-gray-400">
-              We are a leading news aggregator, bringing you the latest and most relevant news from around the world.
-            </p>
-          </div>
-
-          {/* Quick Links Section */}
-          <div className="mb-8 md:mb-0">
-            <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="/" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="/about" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="/contact" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  Contact
-                </a>
-              </li>
-              <li>
-                <a href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  Privacy Policy
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter Section */}
-          <div className="mb-8 md:mb-0">
-            <h3 className="text-xl font-semibold mb-4">Subscribe to Our Newsletter</h3>
-            <p className="text-gray-400 mb-4">Stay updated with the latest news and trends.</p>
-            <form className="flex">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full px-4 py-2 rounded-l-lg focus:outline-none text-gray-900"
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition-colors duration-300"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-
-          {/* Social Media Section */}
-          <div className="mb-8 md:mb-0">
-            <h3 className="text-xl font-semibold mb-4">Follow Us</h3>
-            <div className="flex space-x-4">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <FontAwesomeIcon icon={faFacebook} className="text-2xl" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <FontAwesomeIcon icon={faTwitter} className="text-2xl" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <FontAwesomeIcon icon={faInstagram} className="text-2xl" />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <FontAwesomeIcon icon={faLinkedin} className="text-2xl" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Copyright Section */}
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-400">
-            &copy; {new Date().getFullYear()} News Aggregator. All rights reserved.
+    <footer className="bg-gray-900 text-gray-300 py-12">
+      <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* About */}
+        <div>
+          <h4 className="text-white text-lg font-bold mb-4">About News Flash</h4>
+          <p className="text-sm">
+            Your go-to source for the latest headlines and in-depth analysis from around the world.
           </p>
         </div>
+
+        {/* Links */}
+        <div>
+          <h4 className="text-white text-lg font-bold mb-4">Quick Links</h4>
+          <ul className="space-y-2 text-sm">
+            {['Home', 'About', 'Contact', 'Privacy Policy'].map((link) => (
+              <li key={link}>
+                <a href={`/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-white transition-colors">
+                  {link}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Newsletter */}
+        <div>
+          <h4 className="text-white text-lg font-bold mb-4">Newsletter</h4>
+          <p className="text-sm mb-4">Sign up for a daily digest of top stories.</p>
+          <form className="flex">
+            <input
+              type="email"
+              placeholder="Email address"
+              className="w-full px-4 py-2 rounded-l-lg focus:outline-none text-gray-900"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+
+        {/* Social */}
+        <div>
+          <h4 className="text-white text-lg font-bold mb-4">Follow Us</h4>
+          <div className="flex space-x-4">
+            {[faFacebookF, faTwitter, faInstagram, faLinkedinIn].map((icon, idx) => (
+              <a
+                key={idx}
+                href="#"
+                className="p-2 bg-gray-800 rounded-full hover:bg-blue-600 transition-colors"
+              >
+                <FontAwesomeIcon icon={icon} className="text-white text-lg" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm">
+        &copy; {new Date().getFullYear()} News Flash. All rights reserved.
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

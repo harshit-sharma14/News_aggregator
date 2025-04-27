@@ -1,39 +1,44 @@
+// NewsCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const NewsCard = ({ news }) => {
+export default function NewsCard({ news }) {
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      {/* News Image */}
-      <img
-        src={news.urlToImage || 'https://via.placeholder.com/400x200'}
-        alt={news.title}
-        className="w-full h-48 object-cover"
-      />
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
+      {/* Image Overlay */}
+      <div className="relative h-48">
+        <img
+          src={news.urlToImage || 'https://via.placeholder.com/400x200'}
+          alt={news.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-60"></div>
+        <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs uppercase font-bold px-3 py-1 rounded-lg">
+          {news.source?.name || 'Unknown'}
+        </span>
+      </div>
 
-      {/* News Content */}
-      <div className="p-6">
-        {/* News Title */}
-        <h3 className="text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition-colors duration-300">
-          <Link to={`/news/${news.title}`} state={{ news }}>
+      {/* Content */}
+      <div className="p-6 flex flex-col justify-between h-48">
+        <Link to={`/news/${encodeURIComponent(news.title)}`} state={{ news }}>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-300">
             {news.title}
-          </Link>
-        </h3>
-
-        {/* News Description */}
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">{news.description}</p>
-
-        {/* Read More Button */}
-        <Link
-          to={`/news/${news.title}`}
-          state={{ news }}
-          className="inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
-        >
-          Read more
+          </h3>
         </Link>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+          {news.description || 'No description available.'}
+        </p>
+        <div className="mt-auto flex justify-between items-center">
+          <Link
+            to={`/news/${encodeURIComponent(news.title)}`}
+            state={{ news }}
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Read More →
+          </Link>
+          <span className="text-gray-500 text-xs">{new Date(news.publishedAt).toLocaleDateString()}</span>
+        </div>
       </div>
     </div>
   );
-};
-
-export default NewsCard;
+}
